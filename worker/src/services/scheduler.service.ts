@@ -19,13 +19,12 @@
 import cronParser from 'cron-parser';
 import { v4 as uuidv4 } from 'uuid';
 import type { Redis } from 'ioredis';
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient, ScheduledJob } from '@prisma/client';
 import { createChildLogger } from '../config/logger';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 /** Default priority for scheduler-enqueued jobs. */
-const DEFAULT_PRIORITY = 5;
 
 /** How often (ms) the scheduler polls for due jobs. */
 const POLL_INTERVAL_MS = 60_000;
@@ -119,9 +118,6 @@ export class SchedulerService {
           isActive: true,
           nextRunAt: { lte: now },
         },
-        include: {
-          queue: { select: { slug: true } },
-        },
       });
 
       if (dueSchedules.length === 0) {
@@ -133,9 +129,21 @@ export class SchedulerService {
         scheduleIds: dueSchedules.map((s) => s.id),
       });
 
+      const queueIds = [...new Set(dueSchedules.map((s) => s.queueId))];
+      const queues = await this.prisma.queue.findMany({
+        where: { id: { in: queueIds } },
+        select: { id: true, slug: true },
+      });
+      const queueMap = new Map(queues.map((q) => [q.id, q.slug]));
+
+      const schedulesWithQueue = dueSchedules.map((schedule) => ({
+        ...schedule,
+        queue: { slug: queueMap.get(schedule.queueId) ?? 'default' },
+      }));
+
       // Enqueue each due schedule
       await Promise.allSettled(
-        dueSchedules.map((schedule) => this.enqueueSchedule(schedule, now)),
+        schedulesWithQueue.map((schedule) => this.enqueueSchedule(schedule, now)),
       );
     } catch (err) {
       this.log.error('Unexpected error during scheduler tick', { error: err });
@@ -158,18 +166,7 @@ export class SchedulerService {
    * @param now      - Reference time for lastRunAt (consistent across the tick)
    */
   private async enqueueSchedule(
-    schedule: {
-      id: string;
-      name: string;
-      cronExpression: string;
-      payload: unknown;
-      jobType: string;
-      timeoutMs: number | null;
-      maxRetries: number | null;
-      queueId: string;
-      queue: { slug: string };
-      timezone: string | null;
-    },
+    schedule: ScheduledJob & { queue: { slug: string } },
     now: Date,
   ): Promise<void> {
     const scheduleLog = createChildLogger({
@@ -196,7 +193,7 @@ export class SchedulerService {
 
     const jobId = uuidv4();
     const queueName = schedule.queue.slug;
-    const inputPayload = (schedule.payload as Record<string, unknown>) ?? {};
+    const inputPayload = (schedule.jobPayload as Record<string, unknown>) ?? {};
 
     // ── Atomic transaction ─────────────────────────────────────────────────
     try {
@@ -206,21 +203,18 @@ export class SchedulerService {
           data: {
             id: jobId,
             status: 'QUEUED',
-            type: schedule.jobType,
+            type: 'SCHEDULED',
+            name: schedule.jobName,
             queueId: schedule.queueId,
-            queueName,
             payload: {
               jobId,
-              type: schedule.jobType,
+              type: schedule.jobName,
               input: inputPayload,
-              timeoutMs: schedule.timeoutMs ?? 30_000,
-              maxRetries: schedule.maxRetries ?? 3,
               scheduledJobId: schedule.id,
-            },
-            priority: DEFAULT_PRIORITY,
-            maxRetries: schedule.maxRetries ?? 3,
-            timeoutMs: schedule.timeoutMs ?? 30_000,
-            scheduledJobId: schedule.id,
+            } as any,
+            priority: schedule.priority,
+            maxAttempts: 3,
+            jobTimeoutMs: 30_000,
             scheduledAt: now,
           },
         });
@@ -240,10 +234,8 @@ export class SchedulerService {
       const queueKey = `bull:${queueName}:wait`;
       const bullPayload = JSON.stringify({
         jobId,
-        type: schedule.jobType,
+        type: schedule.jobName,
         input: inputPayload,
-        timeoutMs: schedule.timeoutMs ?? 30_000,
-        maxRetries: schedule.maxRetries ?? 3,
         scheduledJobId: schedule.id,
       });
 

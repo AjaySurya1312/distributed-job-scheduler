@@ -19,7 +19,7 @@ interface AuthActions {
   login: (credentials: LoginCredentials) => Promise<void>
   register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
-  refreshToken: () => Promise<void>
+  refreshAuthToken: () => Promise<void>
   setUser: (user: User) => void
   setOrganization: (org: Organization) => void
   setTokens: (tokens: AuthTokens) => void
@@ -115,7 +115,7 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      refreshToken: async () => {
+      refreshAuthToken: async () => {
         const { refreshToken: token } = get()
         if (!token) return
 
@@ -190,7 +190,7 @@ function scheduleRefresh(
   const refreshIn = Math.max((expiresIn - 60) * 1000, 0)
 
   refreshTimer = setTimeout(async () => {
-    await get().refreshToken()
+    await get().refreshAuthToken()
   }, refreshIn)
 }
 
@@ -204,10 +204,10 @@ export function initAuthRefresh() {
 
     if (remainingSec <= 0) {
       // Token already expired, try refresh immediately
-      state.refreshToken()
+      state.refreshAuthToken()
     } else if (remainingSec < 60) {
       // Less than 1 minute left, refresh now
-      state.refreshToken()
+      state.refreshAuthToken()
     } else {
       // Schedule for 1 minute before expiry
       scheduleRefresh(remainingSec, state.refreshToken as string, useAuthStore.setState, useAuthStore.getState)

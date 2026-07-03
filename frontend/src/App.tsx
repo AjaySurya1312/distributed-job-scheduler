@@ -13,10 +13,11 @@ import { RegisterPage } from '@/pages/RegisterPage';
 
 const queryClient = new QueryClient();
 
-// In a real app, this would check auth state
-const isAuthenticated = true;
+import { useAuthStore } from '@/store/auth.store';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }

@@ -5,7 +5,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm install
 
 FROM node:20-alpine AS builder
 WORKDIR /app
@@ -17,7 +17,7 @@ ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_WS_URL=$VITE_WS_URL
 RUN npm run build
 
-FROM nginx:alpine AS production
+FROM nginx:alpine AS runner
 # Remove default nginx static assets
 RUN rm -rf /usr/share/nginx/html/*
 # Copy built React app

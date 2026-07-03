@@ -147,7 +147,7 @@ export class HeartbeatService {
     try {
       await this.prisma.worker.updateMany({
         where: { id: this.workerId },
-        data: { status: 'STOPPED', stoppedAt: new Date() },
+        data: { status: 'STOPPED', deregisteredAt: new Date() },
       });
     } catch (err) {
       this.log.warn('Failed to set STOPPED status in PostgreSQL', { error: err });
@@ -211,7 +211,7 @@ export class HeartbeatService {
           activeJobs: this.activeJobs,
           memoryUsedMb: memoryMb,
           cpuPercent,
-          recordedAt: new Date(now),
+          createdAt: new Date(now),
         },
       });
 

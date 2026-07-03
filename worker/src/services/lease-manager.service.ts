@@ -195,7 +195,7 @@ export class LeaseManagerService {
     try {
       await this.prisma.worker.update({
         where: { id: staleWorker.id },
-        data: { status: 'DEAD', diedAt: new Date() },
+        data: { status: 'DEAD', deregisteredAt: new Date() },
       });
     } catch (err) {
       workerLog.error('Failed to mark worker as DEAD', { error: err });
@@ -205,7 +205,7 @@ export class LeaseManagerService {
     // ── Step 2: Find all RUNNING jobs owned by the stale worker ────────────
     let orphanedJobs: Array<{
       id: string;
-      queueName: string;
+      queue: { slug: string };
       payload: unknown;
       priority: number | null;
     }>;
@@ -218,7 +218,7 @@ export class LeaseManagerService {
         },
         select: {
           id: true,
-          queueName: true,
+          queue: { select: { slug: true } },
           payload: true,
           priority: true,
         },
@@ -243,28 +243,29 @@ export class LeaseManagerService {
           data: {
             status: 'QUEUED',
             workerId: null,
-            startedAt: null,
-            lastError: `Recovered from dead worker ${staleWorker.id}`,
-            retriesUsed: { increment: 1 },
+            claimedAt: null,
+            errorMessage: `Recovered from dead worker ${staleWorker.id}`,
+            attempts: { increment: 1 },
           },
         });
 
-        // Create an execution log entry for the crash
-        await this.prisma.execution.create({
-          data: {
+        // Update the stuck execution record to FAILED
+        await this.prisma.execution.updateMany({
+          where: {
             jobId: job.id,
             workerId: staleWorker.id,
-            status: 'CRASHED',
-            startedAt: new Date(),
+            status: 'STARTED',
+          },
+          data: {
+            status: 'FAILED',
             finishedAt: new Date(),
-            durationMs: 0,
             errorMessage: `Worker ${staleWorker.id} died without completing the job`,
           },
         });
 
         // Re-push to Redis queue so BullMQ can pick it up
         // We push the full payload so the queue consumer sees the same data
-        const queueKey = `bull:${job.queueName}:wait`;
+        const queueKey = `bull:${job.queue.slug}:wait`;
         const jobData = JSON.stringify({
           jobId: job.id,
           ...(job.payload as Record<string, unknown>),
@@ -276,7 +277,7 @@ export class LeaseManagerService {
 
         workerLog.info('Orphaned job recovered and re-queued', {
           jobId: job.id,
-          queueName: job.queueName,
+          queueName: job.queue.slug,
         });
       } catch (err) {
         workerLog.error('Failed to recover orphaned job', {
@@ -314,7 +315,7 @@ export class LeaseManagerService {
     // ── Purge old heartbeat records ────────────────────────────────────────
     try {
       const { count: heartbeatCount } = await this.prisma.workerHeartbeat.deleteMany({
-        where: { recordedAt: { lt: sevenDaysAgo } },
+        where: { createdAt: { lt: sevenDaysAgo } },
       });
 
       if (heartbeatCount > 0) {

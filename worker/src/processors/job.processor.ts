@@ -181,7 +181,7 @@ export function createProcessor(
         data: {
           status: 'RUNNING',
           workerId,
-          startedAt,
+          claimedAt: startedAt,
         },
       });
     } catch (dbErr) {
@@ -197,7 +197,7 @@ export function createProcessor(
           workerId,
           status: 'STARTED',
           startedAt,
-          attempt: (bullJob.attemptsMade ?? 0) + 1,
+          attemptNumber: (bullJob.attemptsMade ?? 0) + 1,
         },
       });
       executionId = execution.id;
@@ -269,10 +269,9 @@ export function createProcessor(
           where: { id: jobId },
           data: {
             status: exhausted ? 'FAILED' : 'QUEUED',
-            failedAt: exhausted ? finishedAt : undefined,
-            finishedAt: exhausted ? finishedAt : undefined,
-            lastError: errorMessage,
-            retriesUsed: { increment: 1 },
+            completedAt: exhausted ? finishedAt : undefined,
+            errorMessage: errorMessage,
+            attempts: { increment: 1 },
           },
         });
       } catch (dbErr) {
@@ -331,8 +330,8 @@ export function createProcessor(
         where: { id: jobId },
         data: {
           status: 'COMPLETED',
-          finishedAt,
-          result,
+          completedAt: finishedAt,
+          result: result as any,
         },
       });
     } catch (dbErr) {
@@ -357,7 +356,7 @@ export function createProcessor(
 
   // ── Instantiate BullMQ Worker ──────────────────────────────────────────────
   const worker = new Worker(queueName, processorFn, {
-    connection: createBullMQRedisClient(),
+    connection: createBullMQRedisClient() as any,
     concurrency: env.WORKER_CONCURRENCY,
     // Remove jobs from the completed set after 1 hour to keep Redis lean
     removeOnComplete: { age: 3600, count: 1000 },

@@ -75,7 +75,7 @@ const bullWorkers: BullWorker[] = [];
 async function publish(channel: string, message: string): Promise<void> {
   try {
     await publisherRedis.publish(channel, message);
-  } catch (err) {
+  } catch (err: any) {
     logger.warn('Failed to publish Redis event', { channel, error: err });
   }
 }
@@ -94,19 +94,16 @@ async function registerWorker(queueNames: string[]): Promise<void> {
       hostname: HOSTNAME,
       pid: PID,
       status: 'IDLE',
-      queues: queueNames,
-      startedAt: new Date(),
+      metadata: { queues: queueNames } as any,
       lastHeartbeatAt: new Date(),
     },
     update: {
       hostname: HOSTNAME,
       pid: PID,
       status: 'IDLE',
-      queues: queueNames,
-      startedAt: new Date(),
+      metadata: { queues: queueNames } as any,
       lastHeartbeatAt: new Date(),
-      stoppedAt: null,
-      diedAt: null,
+      deregisteredAt: null,
     },
   });
 
@@ -257,7 +254,7 @@ async function gracefulShutdown(signal: string): Promise<void> {
     try {
       await prisma.worker.updateMany({
         where: { id: WORKER_ID },
-        data: { status: 'STOPPED', stoppedAt: new Date() },
+        data: { status: 'STOPPED', deregisteredAt: new Date() },
       });
       logger.info('Worker marked STOPPED in database');
     } catch (err) {
