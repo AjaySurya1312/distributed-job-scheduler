@@ -1,243 +1,140 @@
-HEAD
 # 🚀 Distributed Job Scheduler Platform
 
-A production-grade distributed job scheduling platform built with Node.js, TypeScript, BullMQ, Redis, PostgreSQL, Prisma, React, Docker, and Nginx.
+A production-grade distributed job scheduling system built using Node.js, TypeScript, Redis, PostgreSQL, BullMQ, React, Docker, and Nginx.
 
 ---
 
 ## 📌 Overview
 
-The Distributed Job Scheduler Platform is designed to schedule, execute, monitor, and manage asynchronous background jobs in a scalable and fault-tolerant architecture.
+This project is a scalable distributed job scheduling platform designed to handle background jobs efficiently with fault tolerance, retries, and real-time monitoring.
 
-The system supports:
-
-- Distributed workers
-- Real-time monitoring
+It supports:
+- Job scheduling (immediate, delayed, cron)
+- Distributed worker processing
 - Queue management
-- Scheduled jobs
-- Automatic retries
-- Worker heartbeat monitoring
-- Job recovery
-- Live dashboard
+- Real-time dashboard updates
+- Worker health monitoring
+- Automatic job retry system
+- Fault recovery for failed workers
 
 ---
 
 ## ✨ Features
 
-### Authentication
-- JWT Authentication
-- Role-based access
-- Secure API
+### 🔐 Authentication
+- JWT-based authentication
+- Secure API access
 
-### Job Scheduling
-- Immediate jobs
-- Delayed jobs
-- Cron jobs
-- Retry mechanism
-- Priority jobs
+### 📦 Job System
+- Create jobs (instant / delayed / scheduled)
+- Retry failed jobs automatically
+- Priority-based execution
 
-### Queue Management
-- Multiple queues
-- Queue metrics
-- Queue monitoring
+### ⚙️ Distributed Workers
+- Multiple worker support
+- Horizontal scaling
+- Worker heartbeat monitoring
+- Automatic recovery of orphaned jobs
 
-### Worker Management
-- Worker heartbeat
-- Lease management
-- Auto recovery
-- Crash detection
-
-### Dashboard
-- Live metrics
-- Real-time updates
+### 📊 Dashboard
+- Real-time job tracking
 - Queue statistics
-- Worker status
-- Job analytics
+- Worker status monitoring
+- Live updates using WebSockets
 
 ---
 
-# 🛠 Tech Stack
+## 🏗 System Architecture
 
-## Backend
+Client → Nginx → Backend API → Redis Queue → BullMQ Workers → PostgreSQL
 
+- Jobs are submitted via API
+- Stored in PostgreSQL database
+- Queued using Redis (BullMQ)
+- Workers process jobs asynchronously
+- Real-time updates sent via WebSockets
+
+---
+
+## 🛠 Tech Stack
+
+### Backend
 - Node.js
 - Express
 - TypeScript
-- Prisma
+- Prisma ORM
 - PostgreSQL
 - Redis
 - BullMQ
 - Socket.io
 
-## Frontend
-
+### Frontend
 - React
 - Vite
 - Tailwind CSS
 - Framer Motion
 - Shadcn UI
 
-## Infrastructure
-
+### Infrastructure
 - Docker
 - Docker Compose
 - Nginx
 
 ---
 
-# 📂 Project Structure
+## 📂 Project Structure
 
 ```
 backend/
-frontend/
 worker/
+frontend/
 docker/
 docs/
 ```
 
 ---
 
-# 🏗 Architecture
+## 🚀 Getting Started
 
-Client
-
-↓
-
-Nginx
-
-↓
-
-Backend API
-
-↓
-
-Redis Queue
-
-↓
-
-BullMQ
-
-↓
-
-Worker Services
-
-↓
-
-PostgreSQL
-
----
-
-# ⚡ Getting Started
-
+### 1. Clone Repository
 ```bash
 git clone https://github.com/AjaySurya1312/distributed-job-scheduler.git
-
 cd distributed-job-scheduler
+```
 
+### 2. Run with Docker
+```bash
 docker compose up --build
 ```
 
 ---
 
-# 📊 Future Enhancements
+## 🌐 Access
 
-- Kubernetes Deployment
-- Prometheus Monitoring
-- Grafana Dashboard
-- RabbitMQ Support
-- AWS Deployment
-- Horizontal Auto Scaling
+- Frontend: http://localhost
+- Backend API: http://localhost:3000
+- PostgreSQL: localhost:5432
+- Redis: localhost:6379
 
 ---
 
-# 👨‍💻 Author
+## 📈 Future Enhancements
 
-Ajay Surya
-
-GitHub:
-https://github.com/AjaySurya1312
+- Kubernetes deployment
+- Prometheus + Grafana monitoring
+- Multi-region scaling
+- Kafka integration
+- AWS cloud deployment
 
 ---
 
-⭐ If you found this project interesting, feel free to star the repository.
-=======
-# Distributed Job Scheduler
+## 👨‍💻 Author
 
-A production-grade, distributed job scheduling platform built with a microservices architecture. Designed to handle high-throughput job execution, recurring tasks, real-time analytics, and graceful failure handling across multiple nodes.
+Ajay Surya  
+GitHub: https://github.com/AjaySurya1312
 
-## 🏗️ Architecture
-The platform is built using a modern decoupled architecture:
+---
 
-- **Frontend (`/frontend`)**: React + TypeScript + Vite. Features a dark-mode dashboard for monitoring active jobs, queues, workers, and system analytics in real-time.
-- **Backend API (`/backend`)**: Node.js + Express. Exposes RESTful APIs for creating jobs, managing queues, and serving analytical data to the dashboard.
-- **Worker (`/worker`)**: Node.js + BullMQ. A stateless, highly concurrent job execution engine. Multiple workers can be spawned across different machines to scale processing power horizontally.
-- **Database**: PostgreSQL (managed via Prisma ORM) for persistent storage of job metadata, execution logs, organizations, and worker telemetry.
-- **Message Broker**: Redis (via BullMQ) for lightning-fast queueing, pub/sub event broadcasting, and distributed locking.
+## ⭐ If you like this project
 
-## ✨ Features
-- **Job Execution & Scheduling**: Run jobs immediately, schedule them for the future, or use Cron expressions for recurring tasks.
-- **Horizontal Scaling**: Simply spin up more worker instances. The lease manager ensures jobs are processed without conflicts.
-- **Resilience & Dead Letter Queues**: Configurable retries, timeout management, and dead-letter queues (DLQ) for failed jobs.
-- **Worker Heartbeats**: Workers actively report their CPU/Memory usage. A background lease manager automatically detects crashed workers and requeues their abandoned jobs.
-- **Real-Time Monitoring**: The dashboard provides live insights into queue health, job latency, and worker resource consumption.
-- **Authentication & Multi-Tenancy**: Secure login/registration with organization-level data isolation.
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js v20+
-- Docker & Docker Compose (for spinning up databases and Redis locally)
-
-### Running via Docker Compose (Recommended)
-You can launch the entire stack (Postgres, Redis, Backend, Worker, Frontend) with a single command:
-```bash
-docker compose up -d --build
-```
-- Dashboard: http://localhost:80
-- API Backend: http://localhost:3000
-
-### Local Development Setup
-If you want to run the services individually for development:
-
-1. **Start infrastructure**
-   ```bash
-   cd docker && docker compose up -d postgres redis
-   ```
-
-2. **Setup Backend**
-   ```bash
-   cd backend
-   npm install
-   npx prisma migrate dev
-   npm run dev
-   ```
-
-3. **Setup Worker**
-   ```bash
-   cd worker
-   npm install
-   npx prisma generate
-   npm run dev
-   ```
-
-4. **Setup Frontend**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
-## 📂 Project Structure
-```text
-/
-├── backend/          # Express API server & Prisma Database schema
-├── worker/           # BullMQ execution engine & Scheduler
-├── frontend/         # React SPA Dashboard
-├── docker/           # PostgreSQL & Redis infrastructure config
-└── docker-compose.yml# Full stack orchestration
-```
-
-## 🧪 Testing & Deployment (Phase 7)
-- **Testing**: Ensure that you run the test suites in both `backend` and `worker` to validate task logic and API endpoints. (Test suites are powered by Jest).
-- **Deployment**: The provided `Dockerfile`s in each service are highly optimized, multi-stage builds. They are production-ready and can be deployed directly to Kubernetes, AWS ECS, or DigitalOcean App Platform. Ensure that `DATABASE_URL` and `REDIS_URL` are set securely in your production environment.
-e50edfd (Save current work before syncing with GitHub)
+Give it a ⭐ on GitHub and feel free to fork it!
