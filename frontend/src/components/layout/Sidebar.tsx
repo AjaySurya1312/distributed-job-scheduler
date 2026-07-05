@@ -7,10 +7,10 @@ import {
   Server, 
   BarChart3, 
   FileText, 
-  Settings,
-  Terminal
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { LogoJ } from '@/components/icons/LogoJ';
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -26,10 +26,10 @@ export function Sidebar() {
   return (
     <div className="flex h-screen w-64 flex-col border-r border-white/10 bg-black/40 backdrop-blur-xl">
       <div className="flex h-16 items-center gap-2 px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500">
-          <Terminal className="h-5 w-5 text-white" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 border border-white/10">
+          <LogoJ className="h-5 w-5" />
         </div>
-        <span className="text-lg font-bold tracking-tight text-white">Codity</span>
+        <span className="text-lg font-bold tracking-tight text-white">Jobify</span>
       </div>
       
       <nav className="flex-1 space-y-1 px-4 py-4">

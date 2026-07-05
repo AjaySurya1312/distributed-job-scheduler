@@ -56,23 +56,23 @@ import { JobStatus, JobType } from '@prisma/client';
  *         batchId:
  *           type: string
  */
-export const CreateJobDtoSchema = z
-  .object({
-    name: z.string().min(1, 'Job name is required').max(255),
-    queueId: z.string().uuid('Queue ID must be a valid UUID'),
-    type: z.nativeEnum(JobType),
-    payload: z.record(z.unknown()),
-    priority: z.number().int().min(1).max(4).default(3),
-    runAt: z.coerce.date().optional(),
-    cronExpression: z.string().optional(),
-    cronTimezone: z.string().optional(),
-    maxAttempts: z.number().int().min(1).max(10).default(3),
-    jobTimeoutMs: z.number().int().min(1000).max(3_600_000).optional(),
-    idempotencyKey: z.string().max(255).optional(),
-    metadata: z.record(z.unknown()).optional(),
-    batchId: z.string().max(255).optional(),
-  })
-  .superRefine((data, ctx) => {
+export const BaseCreateJobDtoSchema = z.object({
+  name: z.string().min(1, 'Job name is required').max(255),
+  queueId: z.string().uuid('Queue ID must be a valid UUID'),
+  type: z.nativeEnum(JobType),
+  payload: z.record(z.unknown()),
+  priority: z.number().int().min(1).max(4).default(3),
+  runAt: z.coerce.date().optional(),
+  cronExpression: z.string().optional(),
+  cronTimezone: z.string().optional(),
+  maxAttempts: z.number().int().min(1).max(10).default(3),
+  jobTimeoutMs: z.number().int().min(1000).max(3_600_000).optional(),
+  idempotencyKey: z.string().max(255).optional(),
+  metadata: z.record(z.unknown()).optional(),
+  batchId: z.string().max(255).optional(),
+});
+
+export const CreateJobDtoSchema = BaseCreateJobDtoSchema.superRefine((data, ctx) => {
     if (data.type === JobType.DELAYED && !data.runAt) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -95,7 +95,7 @@ export type CreateJobDto = z.infer<typeof CreateJobDtoSchema>;
 // Update Job (partial)
 // ---------------------------------------------------------------------------
 
-export const UpdateJobDtoSchema = CreateJobDtoSchema.partial().omit({
+export const UpdateJobDtoSchema = BaseCreateJobDtoSchema.partial().omit({
   queueId: true,
   type: true,
 });

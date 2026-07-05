@@ -132,7 +132,7 @@ export const errorHandler: ErrorRequestHandler = (
     const body: ErrorResponseBody = {
       success: false,
       error: {
-        code: err.code,
+        code: err.code || 'UNKNOWN_ERROR',
         message: err.message,
         details: err.details,
         requestId,
@@ -184,7 +184,7 @@ export const errorHandler: ErrorRequestHandler = (
     const body: ErrorResponseBody = {
       success: false,
       error: {
-        code: appError.code,
+        code: appError.code || 'UNKNOWN_ERROR',
         message: appError.message,
         details: appError.details,
         requestId,

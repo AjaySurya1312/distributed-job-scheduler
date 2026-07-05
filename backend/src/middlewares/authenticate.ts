@@ -39,9 +39,9 @@ export async function authenticate(
     }
 
     // Attach user context to request
-    req.userId = payload.sub;
+    req.userId = payload.userId;
     req.userEmail = payload.email;
-    req.orgId = payload.orgId;
+    req.orgId = payload.organizationId;
     req.userRole = payload.role as import('@prisma/client').Role;
     req.jti = payload.jti;
 

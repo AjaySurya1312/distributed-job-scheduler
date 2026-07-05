@@ -40,8 +40,6 @@ const REDIS_OPTIONS: RedisOptions = {
   retryStrategy: reconnectStrategy,
   lazyConnect: false,
   showFriendlyErrorStack: env.NODE_ENV !== 'production',
-  connectTimeout: 10_000,
-  commandTimeout: 5_000,
 };
 
 // ─── Singleton Factory ────────────────────────────────────────────────────────

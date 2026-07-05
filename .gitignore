@@ -1,0 +1,13 @@
+node_modules/
+dist/
+logs/
+.env
+*.log
+Docs_Output/
+docs-gen/
+documentation/
+*.md
+*.html
+*.docx
+*.pdf
+build*/

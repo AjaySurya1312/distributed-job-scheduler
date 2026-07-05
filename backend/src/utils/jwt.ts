@@ -15,9 +15,9 @@ import { UnauthorizedError } from './errors';
 // ---------------------------------------------------------------------------
 
 export interface AccessTokenPayload {
-  sub: string;        // userId
+  userId: string;
   email: string;
-  orgId: string;      // primary org context
+  organizationId: string;
   role: string;
   jti: string;        // unique token ID (for blacklisting)
   iat?: number;
@@ -37,13 +37,13 @@ export interface TokenPair {
 
 /**
  * Signs a new access token with the given payload.
- * @param payload - Token payload (without iat/exp — added automatically)
+ * @param payload - Token payload (without iat/exp â€” added automatically)
  */
 export function signAccessToken(
   payload: Omit<AccessTokenPayload, 'iat' | 'exp'>,
 ): { token: string; expiresAt: Date } {
   const options: SignOptions = {
-    expiresIn: env.JWT_ACCESS_EXPIRES_IN as string,
+    expiresIn: env.JWT_ACCESS_EXPIRES_IN as any,
     algorithm: 'HS256',
   };
   const token = jwt.sign(payload, env.JWT_ACCESS_SECRET, options);

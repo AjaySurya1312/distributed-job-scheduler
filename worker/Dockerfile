@@ -5,7 +5,7 @@
 # ---- Stage 1: Base ----
 FROM node:20-alpine AS base
 WORKDIR /app
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 
 # ---- Stage 2: Production Dependencies ----
 FROM base AS prod-deps

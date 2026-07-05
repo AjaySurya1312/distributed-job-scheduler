@@ -6,6 +6,35 @@ const router = Router();
 
 router.use(authenticate as any);
 
+/**
+ * @swagger
+ * /api/workers/register:
+ *   post:
+ *     summary: Register a new worker
+ *     tags: [Workers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               queueId:
+ *                 type: string
+ *               hostname:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Worker registered
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
 router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { queueId, hostname, status } = req.body;
@@ -16,6 +45,37 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
   }
 });
 
+/**
+ * @swagger
+ * /api/workers/{id}/heartbeat:
+ *   post:
+ *     summary: Record worker heartbeat
+ *     tags: [Workers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               cpuUsage:
+ *                 type: number
+ *               memoryUsage:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Heartbeat recorded
+ *       401:
+ *         description: Unauthorized
+ */
 router.post('/:id/heartbeat', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
@@ -33,6 +93,25 @@ router.post('/:id/heartbeat', async (req: Request, res: Response, next: NextFunc
   }
 });
 
+/**
+ * @swagger
+ * /api/workers:
+ *   get:
+ *     summary: List all workers
+ *     tags: [Workers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: queueId
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: A list of workers
+ *       401:
+ *         description: Unauthorized
+ */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { queueId } = req.query;

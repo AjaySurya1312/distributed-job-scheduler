@@ -1,11 +1,44 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Terminal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/store/auth.store';
 
 export function RegisterPage() {
+  const navigate = useNavigate();
+  const register = useAuthStore((state) => state.register);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+    
+    try {
+      const [firstName, ...lastNameParts] = name.split(' ');
+      const lastName = lastNameParts.join(' ');
+      
+      await register({ 
+        email, 
+        password,
+        firstName: firstName || 'User',
+        lastName: lastName || '',
+        organizationName: `${firstName || 'User'}'s Org`
+      });
+      navigate('/');
+    } catch (err: any) {
+      setError(err.message || 'Failed to create account');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#09090b] flex items-center justify-center relative overflow-hidden selection:bg-indigo-500/30">
       <div className="absolute inset-0 z-0">
@@ -23,21 +56,22 @@ export function RegisterPage() {
         </div>
 
         <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl">
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {error && <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">{error}</div>}
             <div className="space-y-2">
               <Label htmlFor="name" className="text-zinc-300">Full Name</Label>
-              <Input id="name" type="text" placeholder="John Doe" className="bg-white/5 border-white/10 text-white focus-visible:ring-indigo-500" />
+              <Input id="name" type="text" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} required className="bg-white/5 border-white/10 text-white focus-visible:ring-indigo-500" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email" className="text-zinc-300">Email address</Label>
-              <Input id="email" type="email" placeholder="name@company.com" className="bg-white/5 border-white/10 text-white focus-visible:ring-indigo-500" />
+              <Input id="email" type="email" placeholder="name@company.com" value={email} onChange={e => setEmail(e.target.value)} required className="bg-white/5 border-white/10 text-white focus-visible:ring-indigo-500" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password" className="text-zinc-300">Password</Label>
-              <Input id="password" type="password" className="bg-white/5 border-white/10 text-white focus-visible:ring-indigo-500" />
+              <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required className="bg-white/5 border-white/10 text-white focus-visible:ring-indigo-500" />
             </div>
-            <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white mt-2">
-              Create Account
+            <Button type="submit" disabled={isLoading} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white mt-2">
+              {isLoading ? 'Creating...' : 'Create Account'}
             </Button>
           </form>
           

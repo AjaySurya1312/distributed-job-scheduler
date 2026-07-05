@@ -8,7 +8,7 @@ import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env';
 import { logger } from './config/logger';
-import { redis } from './config/redis';
+import { redisClient as redis } from './config/redis';
 import { prisma } from './config/prisma';
 import { requestIdMiddleware } from './middlewares/request-id.middleware';
 import { errorHandler } from './middlewares/error.middleware';
@@ -157,7 +157,7 @@ function setupWebSocket(server: http.Server): SocketIOServer {
   // Subscribe to Redis PubSub channels and broadcast to connected clients
   const subscriber = redis.duplicate();
 
-  subscriber.subscribe('job-events', 'worker-events', 'metrics-stream', (err, count) => {
+  subscriber.subscribe('job-events', 'worker-events', 'metrics-stream', (err: any, count: any) => {
     if (err) {
       logger.error('Redis PubSub subscription error', { error: err });
       return;

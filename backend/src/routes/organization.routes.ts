@@ -6,6 +6,31 @@ const router = Router();
 
 router.use(authenticate as any);
 
+/**
+ * @swagger
+ * /api/organizations:
+ *   post:
+ *     summary: Create a new organization
+ *     tags: [Organizations]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Organization created
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name } = req.body;
@@ -16,6 +41,20 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/organizations:
+ *   get:
+ *     summary: List all organizations
+ *     tags: [Organizations]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of organizations
+ *       401:
+ *         description: Unauthorized
+ */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgs = await prisma.organization.findMany();
@@ -25,6 +64,39 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/organizations/{id}/members:
+ *   post:
+ *     summary: Add a member to an organization
+ *     tags: [Organizations]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Member added
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
 router.post('/:id/members', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;

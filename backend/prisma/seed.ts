@@ -9,16 +9,23 @@ export async function seed() {
   const org = await prisma.organization.create({
     data: {
       name: 'Acme Corp',
+      slug: 'acme-corp',
     },
   });
 
-  // 2. Create User
+  // 2. Create User and Member
   const user = await prisma.user.create({
     data: {
       email: 'admin@acmecorp.com',
       passwordHash: '$2b$10$EP4.o8pC/Z9U3m2H.3X3u.f.P./8g/85xH79Wz2/Z8f29t36b9MOW', // Placeholder hash
-      role: 'ADMIN',
-      organizationId: org.id,
+      firstName: 'Admin',
+      lastName: 'User',
+      memberships: {
+        create: {
+          organizationId: org.id,
+          role: 'ADMIN',
+        },
+      },
     },
   });
 
@@ -26,6 +33,7 @@ export async function seed() {
   const project = await prisma.project.create({
     data: {
       name: 'E-commerce Backend',
+      slug: 'ecommerce-backend',
       description: 'Main production jobs for e-commerce',
       organizationId: org.id,
     },
@@ -35,6 +43,7 @@ export async function seed() {
   const queue = await prisma.queue.create({
     data: {
       name: 'email-notifications',
+      slug: 'email-notifications',
       concurrency: 5,
       isPaused: false,
       projectId: project.id,
@@ -48,7 +57,6 @@ export async function seed() {
       payload: { userId: '12345', template: 'welcome_v2' },
       status: 'COMPLETED',
       attempts: 1,
-      projectId: project.id,
       queueId: queue.id,
     },
   });
@@ -59,7 +67,6 @@ export async function seed() {
       payload: { invoiceId: 'INV-999', amount: 50.00 },
       status: 'FAILED',
       attempts: 3,
-      projectId: project.id,
       queueId: queue.id,
     },
   });
@@ -67,10 +74,11 @@ export async function seed() {
   // 6. Create Retry Policy
   await prisma.retryPolicy.create({
     data: {
+      organizationId: org.id,
+      name: 'Default Exponential',
+      strategy: 'EXPONENTIAL',
       maxAttempts: 3,
-      backoffStrategy: 'exponential',
-      initialDelay: 1000,
-      jobId: job2.id,
+      baseDelayMs: 1000,
     },
   });
 
@@ -78,28 +86,31 @@ export async function seed() {
   const worker = await prisma.worker.create({
     data: {
       hostname: 'worker-node-01',
+      pid: 1234,
       status: 'ACTIVE',
       queueId: queue.id,
     },
   });
 
-  // 8. Create Execution Logs
-  await prisma.executionLog.create({
+  // 8. Create Executions
+  await prisma.execution.create({
     data: {
       status: 'COMPLETED',
       durationMs: 450,
       jobId: job1.id,
       workerId: worker.id,
+      attemptNumber: 1,
     },
   });
 
-  await prisma.executionLog.create({
+  await prisma.execution.create({
     data: {
       status: 'FAILED',
-      error: 'SMTP Connection Timeout',
+      errorMessage: 'SMTP Connection Timeout',
       durationMs: 5000,
       jobId: job2.id,
       workerId: worker.id,
+      attemptNumber: 1,
     },
   });
 
@@ -117,7 +128,4 @@ export async function main() {
   }
 }
 
-// Execute main if run directly
-if (require.main === module) {
-  main();
-}
+main();

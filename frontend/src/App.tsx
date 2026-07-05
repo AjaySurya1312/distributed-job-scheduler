@@ -10,6 +10,7 @@ import { AnalyticsPage } from '@/pages/AnalyticsPage';
 import { LogsPage } from '@/pages/LogsPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
+import { SettingsPage } from '@/pages/SettingsPage';
 
 const queryClient = new QueryClient();
 
@@ -43,7 +44,7 @@ function App() {
             <Route path="workers" element={<WorkersPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="logs" element={<LogsPage />} />
-            <Route path="settings" element={<div className="text-white p-8">Settings Page (Coming Soon)</div>} />
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
           
           <Route path="*" element={<Navigate to="/" replace />} />

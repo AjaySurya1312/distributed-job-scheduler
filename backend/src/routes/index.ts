@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { authRoutes } from './auth.routes';
-import { jobRoutes } from './job.routes';
-import { queueRoutes } from './queue.routes';
-import { projectRoutes } from './project.routes';
-import { workerRoutes } from './worker.routes';
-import { dashboardRoutes } from './dashboard.routes';
-import { organizationRoutes } from './organization.routes';
+import authRoutes from './auth.routes';
+import jobRoutes from './job.routes';
+import queueRoutes from './queue.routes';
+import projectRoutes from './project.routes';
+import workerRoutes from './worker.routes';
+import dashboardRoutes from './dashboard.routes';
+import organizationRoutes from './organization.routes';
 
 /**
  * Main API Router

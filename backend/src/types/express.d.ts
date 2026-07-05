@@ -9,6 +9,7 @@ import { Role } from '@prisma/client';
 declare global {
   namespace Express {
     interface Request {
+      user?: any;
       /** Authenticated user ID (set by authenticate middleware) */
       userId?: string;
       /** Authenticated user email */
@@ -17,7 +18,7 @@ declare global {
       userRole?: Role;
       /** Primary organization ID the user is acting within */
       orgId?: string;
-      /** JWT token ID (jti) — used for access token blacklisting on logout */
+      /** JWT token ID (jti) â€” used for access token blacklisting on logout */
       jti?: string;
       /** Unique request ID (set by requestId middleware) */
       requestId?: string;

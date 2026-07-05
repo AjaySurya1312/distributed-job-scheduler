@@ -6,6 +6,28 @@ const router = Router();
 
 router.use(authenticate as any);
 
+/**
+ * @swagger
+ * /api/projects:
+ *   post:
+ *     summary: Create a new project
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateProjectDto'
+ *     responses:
+ *       201:
+ *         description: Project created
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, organizationId } = req.body;
@@ -16,6 +38,20 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/projects:
+ *   get:
+ *     summary: List all projects
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of projects
+ *       401:
+ *         description: Unauthorized
+ */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const projects = await prisma.project.findMany();
@@ -25,6 +61,28 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/projects/{id}:
+ *   get:
+ *     summary: Get a project by ID
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Project details
+ *       404:
+ *         description: Project not found
+ *       401:
+ *         description: Unauthorized
+ */
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const project = await prisma.project.findUnique({ where: { id: req.params.id } });

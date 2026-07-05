@@ -10,13 +10,13 @@
  */
 
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import { verifyAccessToken, UserRole } from '../utils/jwt';
+import { verifyAccessToken } from '../utils/jwt';
 import { hashApiKey } from '../utils/password';
 import { prisma } from '../config/prisma';
 import { logger } from '../config/logger';
 import {
   AuthenticationError,
-  AuthorizationError,
+  ForbiddenError as AuthorizationError,
 } from '../utils/errors';
 
 // ---------------------------------------------------------------------------
@@ -145,7 +145,7 @@ export const optionalAuth: RequestHandler = (
  * // Only owners and admins can delete
  * router.delete('/:id', authenticate, requireRole('OWNER', 'ADMIN'), handler);
  */
-export function requireRole(...roles: UserRole[]): RequestHandler {
+export function requireRole(...roles: string[]): RequestHandler {
   return (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.user) {
       return next(
@@ -153,7 +153,7 @@ export function requireRole(...roles: UserRole[]): RequestHandler {
       );
     }
 
-    if (!roles.includes(req.user.role as UserRole)) {
+    if (!roles.includes(req.user.role as string)) {
       logger.warn('Authorisation denied — insufficient role', {
         userId: req.user.id,
         userRole: req.user.role,

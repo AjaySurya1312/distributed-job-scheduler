@@ -25,10 +25,17 @@ const options: swaggerJsdoc.Options = {
       },
     ],
   },
-  apis: ['./src/routes/*.ts', './src/controllers/*.ts'], // Path to the API docs
+  apis: [
+    './src/routes/*.ts', 
+    './src/controllers/*.ts', 
+    './src/dtos/*.ts',
+    './dist/routes/*.js',
+    './dist/controllers/*.js',
+    './dist/dtos/*.js'
+  ], // Path to the API docs
 };
 
-const swaggerSpec = swaggerJsdoc(options);
+export const swaggerSpec = swaggerJsdoc(options);
 
 export const setupSwagger = (app: Express) => {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

@@ -43,7 +43,7 @@ function handlePrismaError(err: Prisma.PrismaClientKnownRequestError): {
 }
 
 /**
- * Global error handler — must be mounted LAST in Express middleware chain.
+ * Global error handler â€” must be mounted LAST in Express middleware chain.
  * Signature must have 4 parameters for Express to recognise it as error middleware.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -60,7 +60,7 @@ export function errorHandler(
 
   if (err instanceof AppError) {
     statusCode = err.statusCode;
-    code = err.code;
+    code = err.code || 'UNKNOWN_ERROR';
     message = err.message;
     details = err.details;
 
@@ -100,7 +100,7 @@ export function errorHandler(
     message = 'Invalid data provided to the database';
     logger.warn('Prisma validation error', { message: err.message, requestId: req.requestId });
   } else {
-    // Unexpected programming error — log full stack
+    // Unexpected programming error â€” log full stack
     logger.error('Unhandled error', {
       message: err.message,
       stack: err.stack,
@@ -123,7 +123,7 @@ export function errorHandler(
 }
 
 /**
- * 404 Not Found handler — mount before the global error handler.
+ * 404 Not Found handler â€” mount before the global error handler.
  */
 export function notFoundHandler(req: Request, _res: Response, next: NextFunction): void {
   const { AppError: Err } = require('../utils/errors');
